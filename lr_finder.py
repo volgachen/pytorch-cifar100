@@ -10,10 +10,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 import numpy as np
 
-#from PIL import Image
-#import transforms 
 from torchvision import transforms
-#from tensorboardX import SummaryWriter
 from conf import settings
 from utils import *
 
@@ -30,11 +27,11 @@ class FindLR(_LRScheduler):
 
     Args:
         optimizer: optimzier(e.g. SGD)
-        num_iter: totoal_iters 
+        num_iter: totoal_iters
         max_lr: maximum  learning rate
     """
     def __init__(self, optimizer, max_lr=10, num_iter=100, last_epoch=-1):
-        
+
         self.total_iters = num_iter
         self.max_lr = max_lr
         super().__init__(optimizer, last_epoch)
@@ -46,21 +43,21 @@ class FindLR(_LRScheduler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-net', type=str, required=True, help='net type')
-    parser.add_argument('-w', type=int, default=2, help='number of workers for dataloader')
     parser.add_argument('-b', type=int, default=64, help='batch size for dataloader')
     parser.add_argument('-base_lr', type=float, default=1e-7, help='min learning rate')
     parser.add_argument('-max_lr', type=float, default=10, help='max learning rate')
     parser.add_argument('-num_iter', type=int, default=100, help='num of iteration')
+    parser.add_argument('-gpu', type=bool, default=True, help='use gpu or not')
     parser.add_argument('-gpus', nargs='+', type=int, default=0, help='gpu device')
     args = parser.parse_args()
 
     cifar100_training_loader = get_training_dataloader(
         settings.CIFAR100_TRAIN_MEAN,
         settings.CIFAR100_TRAIN_STD,
-        num_workers=args.w,
+        num_workers=4,
         batch_size=args.b,
     )
-    
+
     net = get_network(args)
 
     loss_function = nn.CrossEntropyLoss()
@@ -78,7 +75,7 @@ if __name__ == '__main__':
 
         #training procedure
         net.train()
-        
+
         for batch_index, (images, labels) in enumerate(cifar100_training_loader):
             if n > args.num_iter:
                 break
